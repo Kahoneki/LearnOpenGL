@@ -6,7 +6,15 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
+float rotationSpeed{};
+
 int main() {
+
+	rotationSpeed = 1;
+
+	int winX{800};
+	int winY{800};
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -14,7 +22,7 @@ int main() {
 
 
 	//----CREATING WINDOW AND VIEWPORT----//
-	GLFWwindow* window = glfwCreateWindow(1000, 1000, "opengl is pain", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(winX, winY, "opengl is pain", NULL, NULL);
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window, woopsies" << std::endl;
 		glfwTerminate();
@@ -26,7 +34,7 @@ int main() {
 		return -1;
 	}
 
-	glViewport(0, 0, 1000, 1000);
+	glViewport(0, 0, winX, winY);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	
@@ -57,6 +65,9 @@ int main() {
 	Shader ourShader("vertex.glsl", "fragment.glsl");
 	
 
+	
+
+
 	//----MAIN RENDER LOOP----//
 	while (!glfwWindowShouldClose(window)) {
 
@@ -70,7 +81,15 @@ int main() {
 
 		//----RENDERING DONE HERE----//
 		ourShader.use();
-		ourShader.setFloat("xOffset", 0.5f);
+		
+		float time = glfwGetTime() * rotationSpeed;
+		
+		//Transforming [-1, 1] to [-0.5, 0.5]
+		float offsetXAmount = sin(time) / 2.0f;
+		float offsetYAmount = cos(time) / 2.0f;
+
+		ourShader.setFloat("xOffset", offsetXAmount);
+		ourShader.setFloat("yOffset", offsetYAmount);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
@@ -105,4 +124,10 @@ void processInput(GLFWwindow* window) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	else if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+
+	//Speed Adjustment//
+	else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		rotationSpeed += 0.01f;
+	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		rotationSpeed -= 0.01f;
 }
