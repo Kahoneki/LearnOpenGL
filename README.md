@@ -1,1 +1,1 @@
-# LearnOpenGL
+Following the guide from https://learnopengl.com/
