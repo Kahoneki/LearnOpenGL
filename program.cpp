@@ -55,12 +55,12 @@ int main() {
 
 
 	Shader ourShader("vertex.glsl", "fragment.glsl");
-
+	
 
 	//----MAIN RENDER LOOP----//
 	while (!glfwWindowShouldClose(window)) {
 
-		//input
+		//inputg
 		processInput(window);
 
 		//Background colour
@@ -70,6 +70,7 @@ int main() {
 
 		//----RENDERING DONE HERE----//
 		ourShader.use();
+		ourShader.setFloat("xOffset", 0.5f);
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
