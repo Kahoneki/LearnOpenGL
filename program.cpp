@@ -23,7 +23,8 @@ const char* fragmentShaderSource =
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-int VertexSetup();
+int GetEBO();
+int GetVAO();
 int GenerateShaderProgram();
 
 
@@ -50,9 +51,9 @@ int main() {
 	glViewport(0, 0, 800, 800);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-
-	int VAO = VertexSetup();
-	int shaderProgram = GenerateShaderProgram();
+	unsigned int EBO = GetEBO();
+	unsigned int VAO = GetVAO();
+	unsigned int shaderProgram = GenerateShaderProgram();
 
 
 	//----MAIN RENDER LOOP----//
@@ -69,7 +70,8 @@ int main() {
 		//----RENDERING DONE HERE----//
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 
 		//check + call events and swap the buffers
@@ -93,11 +95,27 @@ void processInput(GLFWwindow* window) {
 }
 
 
-int VertexSetup() {
+int GetEBO() {
+	unsigned int indices[] = {
+		0,1,3,
+		1,2,3
+	};
+
+	unsigned int EBO;
+	glGenBuffers(1, &EBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+	return EBO;
+}
+
+
+int GetVAO() {
 	float vertices[] = {
-		-0.5f, -0.5f, 0.0f,
-		 0.5f, -0.5f, 0.0f,
-		 0.0f,  0.5f, 0.0f
+	 0.5f,  0.5f, 0.0f,  // top right
+	 0.5f, -0.5f, 0.0f,  // bottom right
+	-0.5f, -0.5f, 0.0f,  // bottom left
+	-0.5f,  0.5f, 0.0f   // top left 
 	};
 
 	unsigned int VAO;
