@@ -7,31 +7,26 @@
 const char* vertexShaderSource =
 "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
+"out vec4 vertexColour;\n"
 "void main()\n"
 "{\n"
 "	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"	vertexColour = vec4(0.5, 0.0, 0.0, 1.0);\n"
 "}\0";
 
-const char* fragmentShaderSourceOrange =
+const char* fragmentShaderSource =
 "#version 330 core\n"
-"out vec4 FragColor;\n"
+"out vec4 FragColour;\n"
+"in vec4 vertexColour;\n"
 "void main()\n"
 "{\n"
-"	FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\0";
-
-const char* fragmentShaderSourceYellow =
-"#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"	FragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n"
+"	FragColour = vertexColour;\n"
 "}\0";
 
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
-int GenerateShaderProgram(int colourCode);
+int GenerateShaderProgram();
 
 
 int main() {
@@ -59,38 +54,25 @@ int main() {
 
 	
 	//----GENERATING VBOs AND VAOs----//
-	float firstTriangle[] = {
-		-0.9f, -0.5f, 0.0f,  // left 
-		-0.0f, -0.5f, 0.0f,  // right
-		-0.45f, 0.5f, 0.0f,  // top 
+	float vertices[] = {
+		-0.5f, -0.5f, 0.0f,
+		 0.5f, -0.5f, 0.0f,
+		 0.0f,  0.5f, 0.0f
 	};
-	float secondTriangle[] = {
-		0.0f, -0.5f, 0.0f,  // left
-		0.9f, -0.5f, 0.0f,  // right
-		0.45f, 0.5f, 0.0f   // top 
-	};
-	unsigned int VAOs[2], VBOs[2];
-	glGenVertexArrays(2, VAOs);
-	glGenBuffers(2, VBOs);
+
+	unsigned int VAO, VBO;
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
 
 	//Generating first triangle//
-	glBindVertexArray(VAOs[0]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(firstTriangle), firstTriangle, GL_STATIC_DRAW);
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);	//Vertex attributes stay the same
 	glEnableVertexAttribArray(0);
 
-	//Generating second triangle//
-	glBindVertexArray(VAOs[1]);
-	glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(secondTriangle), secondTriangle, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);	//Vertex attributes stay the same
-	glEnableVertexAttribArray(0);
-	glBindVertexArray(0);
 
-
-	unsigned int shaderProgramOrange = GenerateShaderProgram(0);
-	unsigned int shaderProgramYellow = GenerateShaderProgram(1);
+	unsigned int shaderProgram = GenerateShaderProgram();
 
 
 	//----MAIN RENDER LOOP----//
@@ -105,11 +87,8 @@ int main() {
 
 
 		//----RENDERING DONE HERE----//
-		glUseProgram(shaderProgramOrange);
-		glBindVertexArray(VAOs[0]);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glUseProgram(shaderProgramYellow);
-		glBindVertexArray(VAOs[1]);
+		glUseProgram(shaderProgram);
+		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 
@@ -119,10 +98,9 @@ int main() {
 	}
 
 	//De-allocate all resources
-	glDeleteVertexArrays(2, VAOs);
-	glDeleteBuffers(2, VBOs);
-	glDeleteProgram(shaderProgramOrange);
-	glDeleteProgram(shaderProgramYellow);
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteProgram(shaderProgram);
 
 	glfwTerminate();
 	return 0;
@@ -148,7 +126,7 @@ void processInput(GLFWwindow* window) {
 }
 
 
-int GenerateShaderProgram(int colourCode) { //0=orange, 1=yellow
+int GenerateShaderProgram() {
 	//Vertex shader
 	unsigned int vertexShader;
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -169,11 +147,7 @@ int GenerateShaderProgram(int colourCode) { //0=orange, 1=yellow
 	//Fragment shader
 	unsigned int fragmentShader;
 	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	if (colourCode == 0)
-		glShaderSource(fragmentShader, 1, &fragmentShaderSourceOrange, NULL);
-	else if (colourCode == 1)
-		glShaderSource(fragmentShader, 1, &fragmentShaderSourceYellow, NULL);
-	glCompileShader(fragmentShader);
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
 
 	//Making sure fragment shader is compiled properly.
 	{
