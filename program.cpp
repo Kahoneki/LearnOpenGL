@@ -7,18 +7,21 @@
 const char* vertexShaderSource =
 "#version 330 core\n"
 "layout (location = 0) in vec3 aPos;\n"
+"layout (location = 1) in vec3 aColour;\n"
+"out vec3 ourColour;\n"
 "void main()\n"
 "{\n"
-"	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+"	gl_Position = vec4(aPos, 1.0);\n"
+"	ourColour = aColour;\n"
 "}\0";
 
 const char* fragmentShaderSource =
 "#version 330 core\n"
 "out vec4 FragColour;\n"
-"uniform vec4 ourColour;"
+"in vec3 ourColour;\n"
 "void main()\n"
 "{\n"
-"	FragColour = ourColour;\n"
+"	FragColour = vec4(ourColour, 1.0);\n"
 "}\0";
 
 
@@ -53,21 +56,26 @@ int main() {
 	
 	//----GENERATING VBOs AND VAOs----//
 	float vertices[] = {
-		-0.5f, -0.5f, 0.0f,
-		 0.5f, -0.5f, 0.0f,
-		 0.0f,  0.5f, 0.0f
+		// positions			// colours
+		  0.5f, -0.5f, 0.0f,	1.0f, 0.0f, 0.0f,	//bottom right
+		 -0.5f, -0.5f, 0.0f,	0.0f, 1.0f, 0.0f,	//bottom left
+		  0.0f,  0.5f, 0.0f,	0.0f, 0.0f, 1.0f,	//top
 	};
 
 	unsigned int VAO, VBO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 
-	//Generating first triangle//
 	glBindVertexArray(VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);	//Vertex attributes stay the same
+
+	//Position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	//Colour attribute
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 
 	unsigned int shaderProgram = GenerateShaderProgram();
@@ -85,20 +93,7 @@ int main() {
 
 
 		//----RENDERING DONE HERE----//
-
-		//Using time for colour change effect
-		float speed = 5.0f;
-		float timeValue = glfwGetTime()*speed;
-
-		//Colour values oscillate in the range [0,1] based on sin/cos functions.
-		float redValue = (-sin(timeValue) / 2.0f) + 0.5f;
-		float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-		float blueValue = (cos(timeValue) / 2.0f) + 0.5f;
-		
-		int vertexColourLocation = glGetUniformLocation(shaderProgram, "ourColour");
 		glUseProgram(shaderProgram);
-		glUniform4f(vertexColourLocation, redValue, greenValue, blueValue, 1.0f);
-
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
