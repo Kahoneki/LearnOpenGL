@@ -133,15 +133,7 @@ int main() {
 	stbi_image_free(data);
 
 
-	//----GENERATING TRANSFORMATION MATRIX----//
-	//Scales by 0.5 and rotates by pi/2 radians.
-	glm::mat4 trans = glm::mat4(1.0f);
-	trans = glm::rotate(trans, PI / 2, glm::vec3(0.0, 0.0, 1.0));
-	trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
-
-	//Passing the transformation matrix to the shader
-	unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+	
 
 
 	//----MAIN RENDER LOOP----//
@@ -161,11 +153,17 @@ int main() {
 
 		//----RENDERING DONE HERE----//
 		float time = glfwGetTime();
-		float xOffset, yOffset;
-		xOffset = sin(time) / 2;
-		yOffset = cos(time) / 2;
-		ourShader.setFloat("xOffset", xOffset);
-		ourShader.setFloat("yOffset", yOffset);
+		
+		//----GENERATING TRANSFORMATION MATRIX----//
+		//Scales by 0.5 and rotates based on elapsed time.
+		glm::mat4 trans = glm::mat4(1.0f);
+		trans = glm::rotate(trans, time, glm::vec3(0.0, 0.0, 1.0));
+		trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+
+		//Passing the transformation matrix to the shader
+		unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+
 		ourShader.setFloat("mixPercentage", mixPercentage);
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
