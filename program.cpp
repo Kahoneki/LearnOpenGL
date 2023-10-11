@@ -48,10 +48,10 @@ int main() {
 	//----GENERATING VBOs AND VAOs----//
 	float vertices[] = {
 		// positions          // colors           // texture coords
-		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
+		 0.5f,  0.5f, 0.0f,   0.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+		 0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 0.0f,   1.0f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 0.0f,   0.0f, 0.0f, // bottom left
+		-0.5f,  0.5f, 0.0f,   0.0f, 0.0f, 0.0f,   0.0f, 1.0f  // top left 
 	};
 	unsigned int indices[] = {
 		0,1,3,
@@ -154,11 +154,27 @@ int main() {
 		//----RENDERING DONE HERE----//
 		float time = glfwGetTime();
 		
+		float xOffset = sin(time) / 2;
+		float yOffset = cos(time) / 2;
+
+		ourShader.setFloat("xOffset", xOffset);
+		ourShader.setFloat("yOffset", yOffset);
+
+		float rOffset = ((sin(time) * 3) + 1)/ 2;
+		float gOffset = ((-cos(time) * 2) + 1) / 2;
+		float bOffset = ((cos(time) * 6) + 1) / 2;
+
+		ourShader.setFloat("rOffset", rOffset);
+		ourShader.setFloat("gOffset", gOffset);
+		ourShader.setFloat("bOffset", bOffset);
+		
 		//----GENERATING TRANSFORMATION MATRIX----//
 		//Scales by 0.5 and rotates based on elapsed time.
 		glm::mat4 trans = glm::mat4(1.0f);
-		trans = glm::rotate(trans, time, glm::vec3(0.0, 0.0, 1.0));
-		trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+		float rotationAmount = sin(time) * 10;
+		std::cout << rotationAmount << std::endl;
+		trans = glm::rotate(trans, rotationAmount, glm::vec3(0.0, 0.0, 1.0));
+		//trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
 
 		//Passing the transformation matrix to the shader
 		unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
