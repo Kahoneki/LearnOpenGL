@@ -1,20 +1,26 @@
-#include <glad/glad.h>
+#include <GLAD/glad.h>
 #include <GLFW/glfw3.h>
+
+#include <GLM/glm.hpp>
+#include <GLM/gtc/matrix_transform.hpp>
+#include <GLM/gtc/type_ptr.hpp>
+
 #include <iostream>
+
 #include "shader.h"
 #include "stb_image.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
-float rotationSpeed{};
+float mixPercentage{0.5};
+
+constexpr int winX{800};
+constexpr int winY{800};
+
+constexpr float PI{ 3.14159f };
 
 int main() {
-
-	rotationSpeed = 1;
-
-	int winX{800};
-	int winY{800};
 
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -42,10 +48,10 @@ int main() {
 	//----GENERATING VBOs AND VAOs----//
 	float vertices[] = {
 		// positions          // colors           // texture coords
-		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
-		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+		 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
+		 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
+		-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // top left 
 	};
 	unsigned int indices[] = {
 		0,1,3,
@@ -71,7 +77,7 @@ int main() {
 	//Colour attribute
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	//Textur-Coord attribute
+	//Texture-Coord attribute
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
@@ -89,8 +95,8 @@ int main() {
 	glGenTextures(2, textures);
 	glBindTexture(GL_TEXTURE_2D, textures[0]);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -114,7 +120,7 @@ int main() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
 	data = stbi_load("awesomeface.png", &width, &height, &nrChannels, 0);
 	if (data) {
@@ -125,6 +131,17 @@ int main() {
 		std::cout << "Failed to load texture 2" << std::endl;
 	}
 	stbi_image_free(data);
+
+
+	//----GENERATING TRANSFORMATION MATRIX----//
+	//Scales by 0.5 and rotates by pi/2 radians.
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::rotate(trans, PI / 2, glm::vec3(0.0, 0.0, 1.0));
+	trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+
+	//Passing the transformation matrix to the shader
+	unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
 
 	//----MAIN RENDER LOOP----//
@@ -143,13 +160,13 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, textures[1]);
 
 		//----RENDERING DONE HERE----//
-
 		float time = glfwGetTime();
-		float mixPercentage = (sin(time) + 1.1) / 4;
-		float offset = sin(time);
-		ourShader.setFloat("offset", offset);
+		float xOffset, yOffset;
+		xOffset = sin(time) / 2;
+		yOffset = cos(time) / 2;
+		ourShader.setFloat("xOffset", xOffset);
+		ourShader.setFloat("yOffset", yOffset);
 		ourShader.setFloat("mixPercentage", mixPercentage);
-
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -186,9 +203,9 @@ void processInput(GLFWwindow* window) {
 	else if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
-	//Speed Adjustment//
+	//Mix Adjustment//
 	else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-		rotationSpeed += 0.01f;
+		mixPercentage += 0.01f;
 	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-		rotationSpeed -= 0.01f;
+		mixPercentage -= 0.01f;
 }
