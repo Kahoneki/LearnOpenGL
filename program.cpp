@@ -11,6 +11,7 @@
 
 #include "shader.h"
 #include "stb_image.h"
+#include "camera.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -18,14 +19,16 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos);
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 
 
-//----CAMERA SETUP----//
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); //Normalised direction vector, camera points in -z axis
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
 constexpr int winX{800};
 constexpr int winY{800};
 constexpr float aspectRatio{ winX / winY };
+
+
+//----CAMERA SETUP----//
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); //Normalised direction vector, camera points in -z axis
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 float mousePosLastFrameX = winX/2, mousePosLastFrameY = winY/2; //Initialise to center of screen
 
@@ -36,10 +39,13 @@ bool firstMouse = true; //Used to stop large jump in mouse movement when startin
 float fov = 90.0f;
 
 
-float mixPercentage{0.5};
-
+//Timing
 float deltaTime = 0.0f; //Time between current frame and last frame
 float lastFrame = 0.0f; //Time of last frame
+
+
+//Misc
+float mixPercentage{ 0.5 };
 
 int main() {
 
@@ -318,13 +324,13 @@ void processInput(GLFWwindow* window) {
 	//Movement
 	const float moveSpeed = 10.0f;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraFront * moveSpeed * deltaTime;
+		camera.ProcessKeyboard(FORWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraFront * moveSpeed * deltaTime;
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * moveSpeed * deltaTime;
+		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * moveSpeed * deltaTime;
+		camera.ProcessKeyboard(RIGHT, deltaTime);
 
 	//Wireframe Toggle//
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
@@ -356,32 +362,10 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos) {
 	mousePosLastFrameX = xPos;
 	mousePosLastFrameY = yPos;
 
-	//Updating yaw and pitch
-	const float sensitivity = 0.1f;
-	xOffset *= sensitivity;
-	yOffset *= sensitivity;
-	yaw += xOffset;
-	pitch += yOffset;
-
-	//Constraints
-	if (pitch > 89.0f)
-		pitch = 89.0f;
-	if (pitch < -89.0f)
-		pitch = -89.0f;
-
-	//Calcuating direction vector using some maths I am not qualified enough to understand
-	glm::vec3 direction;
-	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	direction.y = sin(glm::radians(pitch));
-	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(direction);
+	camera.ProcessMouseMovement(xOffset, yOffset);
 }
 
 
 void scroll_callback(GLFWwindow* window, double xOffset, double yOffset) {
-	fov -= (float)yOffset;
-	if (fov < 1.0f)
-		fov = 1.0f;
-	if (fov > 100.0f)
-		fov = 100.0f;
+	camera.ProcessMouseScroll(yOffset);
 }
