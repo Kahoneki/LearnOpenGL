@@ -17,11 +17,18 @@ void processInput(GLFWwindow* window);
 
 float mixPercentage{0.5};
 
+constexpr float PI{ 3.14159f };
+
+
+//----CAMERA SETUP----//
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); //Normalised direction vector, camera points in -z axis.
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
 constexpr int winX{800};
 constexpr int winY{800};
 constexpr float aspectRatio{ winX / winY };
 
-constexpr float PI{ 3.14159f };
 
 int main() {
 
@@ -48,15 +55,6 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-
-	//----CAMERA SETUP----//
-	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-	glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
-	glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget); //cameraDirection goes from world origin to camera origin, not camera origin to world origin. cameraDirection points along +z axis
-	glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f); //up vector in world space, intermediary vector needed to get cameraRight
-	glm::vec3 cameraRight = glm::normalize(glm::cross(worldUp, cameraDirection)); //Cross product returns vector perpendicular to both parameters. The order given ensures +x axis, if order was flipped, it would be -x.
-	glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
 
 
 	//----GENERATING VBOs AND VAOs----//
@@ -240,15 +238,12 @@ int main() {
 		ourShader.setFloat("gOffset", gOffset);
 		ourShader.setFloat("bOffset", bOffset);
 
-		glm::mat4 trans = glm::mat4(1.0f);
 		float rotationAmount = sin(time) * 10;
+		glm::mat4 trans = glm::mat4(1.0f);
 		trans = glm::rotate(trans, rotationAmount, glm::vec3(0.0, 0.0, 1.0));
 
-		const float radius = 10.0f;
-		float camX = sin(glfwGetTime()) * radius;
-		float camZ = cos(glfwGetTime()) * radius;
 		glm::mat4 view;
-		view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
 		ourShader.setMat4("rotationTransform", trans);
 
@@ -296,11 +291,23 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 
 
 void processInput(GLFWwindow* window) {
+	
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 
+	//Movement
+	const float cameraSpeed = 0.05f;
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		cameraPos += cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		cameraPos -= cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+
 	//Wireframe Toggle//
-	else if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	else if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -308,7 +315,7 @@ void processInput(GLFWwindow* window) {
 		glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
 
 	//Mix Adjustment//
-	else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 		mixPercentage += 0.01f;
 	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		mixPercentage -= 0.01f;
