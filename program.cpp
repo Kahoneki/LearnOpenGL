@@ -5,6 +5,8 @@
 #include <GLM/gtc/matrix_transform.hpp>
 #include <GLM/gtc/type_ptr.hpp>
 
+#include <cstdlib> //for srand(), rand()
+
 #include <iostream>
 
 #include "shader.h"
@@ -47,52 +49,78 @@ int main() {
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	
+
+	//----CAMERA SETUP----//
+	glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+	glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+	glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget); //cameraDirection goes from world origin to camera origin, not camera origin to world origin. cameraDirection points along +z axis
+	glm::vec3 worldUp = glm::vec3(0.0f, 1.0f, 0.0f); //up vector in world space, intermediary vector needed to get cameraRight
+	glm::vec3 cameraRight = glm::normalize(glm::cross(worldUp, cameraDirection)); //Cross product returns vector perpendicular to both parameters. The order given ensures +x axis, if order was flipped, it would be -x.
+	glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+
+	glm::mat4 view;
+	view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
+					   glm::vec3(0.0f, 0.0f, 0.0f),
+					   glm::vec3(0.0f, 1.0f, 0.0f));
+
+
 	//----GENERATING VBOs AND VAOs----//
-
 	float vertices[] = {
-	//Positions				//Colours				//Texture Coords
-	-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-	 0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	 0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	-0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+		//Positions				//Colours				//Texture Coords
+		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
 
-	-0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-	 0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
 
-	-0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-	-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
 
-	 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	 0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
 
-	-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-	 0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	 0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	-0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-	-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
 
-	-0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
-	 0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
-	-0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-	-0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f
+		-0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f
+	};
+
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
 
 	unsigned int VAO, VBO;
@@ -120,6 +148,7 @@ int main() {
 	ourShader.setInt("texture1", 0);
 	ourShader.setInt("texture2", 1);
 
+
 	//----SAMPLING TEXTURE----//
 
 	stbi_set_flip_vertically_on_load(true);
@@ -136,7 +165,7 @@ int main() {
 
 	int width, height, nrChannels;
 	unsigned char* data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
-	
+
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
@@ -167,13 +196,22 @@ int main() {
 
 
 	//----GENERATING TRANSFORMATION MATRICES----//
-	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-	glm::mat4 view = glm::mat4(1.0f);
-	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 	glm::mat4 projection;
-	projection = glm::perspective(PI / 2, aspectRatio, 0.1f, 100.0f);
-	
+	projection = glm::perspective(PI / 4, aspectRatio, 0.1f, 100.0f);
+
+
+	//Generating random rotation axes for all cubes
+	float rotationAxes[10][3];
+	srand(234567832456348756);
+	for (unsigned int i = 0; i < 10; i++) {
+		float randX = (float)rand() / (float)RAND_MAX;
+		float randY = (float)rand() / (float)RAND_MAX;
+		float randZ = (float)rand() / (float)RAND_MAX;
+
+		rotationAxes[i][0] = randX;
+		rotationAxes[i][1] = randY;
+		rotationAxes[i][2] = randZ;
+	}
 
 
 	//----MAIN RENDER LOOP----//
@@ -215,17 +253,26 @@ int main() {
 
 		ourShader.setFloat("mixPercentage", mixPercentage);
 
-		//Rotate the cube
-		model = glm::rotate(model, (float)(sin(glfwGetTime()) * 0.005), glm::vec3(0.5f, 1.0f, 0.0f));
-
-		ourShader.setMat4("model", model);
 		ourShader.setMat4("view", view);
 		ourShader.setMat4("projection", projection);
 
 
 		//----RENDERING DONE HERE----//
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		//Draw Cubes
+		for (unsigned int i = 0; i < 10; i++) {
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+
+			float angleOffset = i * 80.0f;			
+			model = glm::rotate(model, (float)(sin(glfwGetTime() * 0.005) + angleOffset), glm::vec3(rotationAxes[i][0], rotationAxes[i][1], rotationAxes[i][2]));
+			
+			ourShader.setMat4("model", model);
+		
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
 
 
 		//check + call events and swap the buffers
