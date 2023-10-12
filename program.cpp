@@ -122,7 +122,7 @@ int main() {
 		 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
 		 0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		1.0f, 0.0f,
 		-0.5f,  0.5f,  0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f
+		-0.5f,  0.5f, -0.5f,	0.0f, 0.0f, 0.0f,		0.0f, 1.0f,
 	};
 
 	glm::vec3 cubePositions[] = {
@@ -267,7 +267,7 @@ int main() {
 		trans = glm::rotate(trans, rotationAmount, glm::vec3(0.0, 0.0, 1.0));
 
 		glm::mat4 view;
-		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp); //lookAt() automatically normalises direction argument (cameraPos + cameraFront)
+		view = camera.GetViewMatrix();
 
 		glm::mat4 projection;
 		projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);

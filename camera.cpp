@@ -1,4 +1,5 @@
 #include "camera.h"
+#include <iostream>
 
 
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
@@ -36,7 +37,7 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 //Returns the view matrix calculated using euler angles and the LookAt matrix
 glm::mat4 Camera::GetViewMatrix()
 {
-	return glm::lookAt(Position, Position + Front, Up);
+	return glm::lookAt(Position, Position + Front, Up); //lookAt() automatically normalises direction argument (Position + Front)
 }
 
 
@@ -52,6 +53,8 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 		Position -= Right * velocity;
 	if (direction == RIGHT)
 		Position += Right * velocity;
+	
+	
 }
 
 
