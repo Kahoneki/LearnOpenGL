@@ -15,6 +15,5 @@ uniform float bOffset;
 uniform float mixPercentage;
 
 void main() {
-	//FragColour = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), mixPercentage);
 	FragColour = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), mixPercentage) * vec4(ourColour.r + rOffset, ourColour.g + gOffset, ourColour.b + bOffset, 1.0f);
 }
