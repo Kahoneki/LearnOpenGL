@@ -197,6 +197,7 @@ int main() {
 		lightingShader.setMat4("view", view);
 		lightingShader.setMat4("projection", projection);
 
+		lightingShader.setVec3("viewPos", camera.Position);
 		lightingShader.setVec3("lightPos", lightPos);
 		lightingShader.setVec3("objectColour", 1.0f, 0.5f, 0.31f);
 		lightingShader.setVec3("lightColour", 1.0f, 1.0f, 1.0f);
@@ -225,13 +226,6 @@ int main() {
 		lightSourceShader.use();
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		GLfloat pixelData[4];
-		glReadPixels(winX/2, winY/2, 1, 1, GL_RGBA, GL_FLOAT, pixelData);
-
-		std::cout << pixelData[0] << " " << pixelData[1] << " " << pixelData[2] << " " << pixelData[3] << std::endl << std::endl;
 
 
 		//Check & call events and swap the buffers

@@ -13,7 +13,7 @@ out vec3 normal;
 void main()
 {
 	fragPos = vec3(model * vec4(aPos, 1.0));
-	normal = mat3(transpose(inverse(model)) * aNormal; //This "normal-matrix" converts normals from local/model space to world space
+	normal = mat3(transpose(inverse(model))) * aNormal; //This "normal-matrix" converts normals from local/model space to world space
 
 	gl_Position = projection * view * vec4(fragPos, 1.0f);
 }
