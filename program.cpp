@@ -58,11 +58,6 @@ int main() {
 	glm::vec3 cameraRight = glm::normalize(glm::cross(worldUp, cameraDirection)); //Cross product returns vector perpendicular to both parameters. The order given ensures +x axis, if order was flipped, it would be -x.
 	glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
 
-	glm::mat4 view;
-	view = glm::lookAt(glm::vec3(0.0f, 0.0f, 3.0f),
-					   glm::vec3(0.0f, 0.0f, 0.0f),
-					   glm::vec3(0.0f, 1.0f, 0.0f));
-
 
 	//----GENERATING VBOs AND VAOs----//
 	float vertices[] = {
@@ -248,6 +243,12 @@ int main() {
 		glm::mat4 trans = glm::mat4(1.0f);
 		float rotationAmount = sin(time) * 10;
 		trans = glm::rotate(trans, rotationAmount, glm::vec3(0.0, 0.0, 1.0));
+
+		const float radius = 10.0f;
+		float camX = sin(glfwGetTime()) * radius;
+		float camZ = cos(glfwGetTime()) * radius;
+		glm::mat4 view;
+		view = glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0));
 
 		ourShader.setMat4("rotationTransform", trans);
 
