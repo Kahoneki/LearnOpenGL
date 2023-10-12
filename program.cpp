@@ -14,6 +14,7 @@
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
+void mouse_callback(GLFWwindow* window, double xPos, double yPos);
 
 
 constexpr float PI{ 3.14159f };
@@ -21,12 +22,20 @@ constexpr float PI{ 3.14159f };
 
 //----CAMERA SETUP----//
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); //Normalised direction vector, camera points in -z axis.
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f); //Normalised direction vector, camera points in -z axis
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 constexpr int winX{800};
 constexpr int winY{800};
 constexpr float aspectRatio{ winX / winY };
+
+float mousePosLastFrameX = winX/2, mousePosLastFrameY = winY/2; //Initialise to center of screen
+
+float yaw = -90.0f; //Ensure the camera points towards the -z axis by default
+float pitch;
+
+bool firstMouse = true; //Used to stop large jump in mouse movement when starting application
+
 
 float mixPercentage{0.5};
 
@@ -56,8 +65,10 @@ int main() {
 
 	glViewport(0, 0, winX, winY);
 	glEnable(GL_DEPTH_TEST);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
 
 
 	//----GENERATING VBOs AND VAOs----//
@@ -327,4 +338,40 @@ void processInput(GLFWwindow* window) {
 		mixPercentage += 0.01f;
 	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 		mixPercentage -= 0.01f;
+}
+
+
+void mouse_callback(GLFWwindow* window, double xPos, double yPos) {
+
+	if (firstMouse) { //Initially true
+		mousePosLastFrameX = xPos;
+		mousePosLastFrameY = yPos;
+		firstMouse = false;
+	}
+
+	//Refreshing variables
+	float xOffset = xPos - mousePosLastFrameX;
+	float yOffset = mousePosLastFrameY - yPos; //Reversed since y-coordinates range from bottom to top
+	mousePosLastFrameX = xPos;
+	mousePosLastFrameY = yPos;
+
+	//Updating yaw and pitch
+	const float sensitivity = 0.1f;
+	xOffset *= sensitivity;
+	yOffset *= sensitivity;
+	yaw += xOffset;
+	pitch += yOffset;
+
+	//Constraints
+	if (pitch > 89.0f)
+		pitch = 89.0f;
+	if (pitch < -89.0f)
+		pitch = -89.0f;
+
+	//Calcuating direction vector using some maths I am not qualified enough to understand
+	glm::vec3 direction;
+	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+	direction.y = sin(glm::radians(pitch));
+	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+	cameraFront = glm::normalize(direction);
 }
