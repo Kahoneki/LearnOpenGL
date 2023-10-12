@@ -17,6 +17,7 @@ float mixPercentage{0.5};
 
 constexpr int winX{800};
 constexpr int winY{800};
+constexpr float aspectRatio{ winX / winY };
 
 constexpr float PI{ 3.14159f };
 
@@ -133,6 +134,12 @@ int main() {
 	stbi_image_free(data);
 
 
+	//----GENERATING TRANSFORMATION MATRICES----//
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+	glm::mat4 view = glm::mat4(1.0f);
+	view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+	glm::mat4 projection;
 	
 
 
@@ -151,36 +158,37 @@ int main() {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, textures[1]);
 
-		//----RENDERING DONE HERE----//
 		float time = glfwGetTime();
-		
+
 		float xOffset = sin(time) / 2;
 		float yOffset = cos(time) / 2;
 
 		ourShader.setFloat("xOffset", xOffset);
 		ourShader.setFloat("yOffset", yOffset);
 
-		float rOffset = ((sin(time) * 3) + 1)/ 2;
+		float rOffset = ((sin(time) * 3) + 1) / 2;
 		float gOffset = ((-cos(time) * 2) + 1) / 2;
 		float bOffset = ((cos(time) * 6) + 1) / 2;
 
 		ourShader.setFloat("rOffset", rOffset);
 		ourShader.setFloat("gOffset", gOffset);
 		ourShader.setFloat("bOffset", bOffset);
-		
-		//----GENERATING TRANSFORMATION MATRIX----//
-		//Scales by 0.5 and rotates based on elapsed time.
+
 		glm::mat4 trans = glm::mat4(1.0f);
 		float rotationAmount = sin(time) * 10;
-		std::cout << rotationAmount << std::endl;
 		trans = glm::rotate(trans, rotationAmount, glm::vec3(0.0, 0.0, 1.0));
-		//trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
 
-		//Passing the transformation matrix to the shader
-		unsigned int transformLoc = glGetUniformLocation(ourShader.ID, "transform");
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
+		ourShader.setMat4("rotationTransform", trans);
 
 		ourShader.setFloat("mixPercentage", mixPercentage);
+
+		ourShader.setMat4("model", model);
+		ourShader.setMat4("view", view);
+		projection = glm::perspective(cos(time)+1, aspectRatio, 0.1f, 100.0f);
+		ourShader.setMat4("projection", projection);
+
+
+		//----RENDERING DONE HERE----//
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
