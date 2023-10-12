@@ -15,9 +15,7 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void mouse_callback(GLFWwindow* window, double xPos, double yPos);
-
-
-constexpr float PI{ 3.14159f };
+void scroll_callback(GLFWwindow* window, double xOffset, double yOffset);
 
 
 //----CAMERA SETUP----//
@@ -35,6 +33,7 @@ float yaw = -90.0f; //Ensure the camera points towards the -z axis by default
 float pitch;
 
 bool firstMouse = true; //Used to stop large jump in mouse movement when starting application
+float fov = 90.0f;
 
 
 float mixPercentage{0.5};
@@ -65,10 +64,13 @@ int main() {
 
 	glViewport(0, 0, winX, winY);
 	glEnable(GL_DEPTH_TEST);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); //Hide cursor
 
+
+	//----SET CALLBACKS----//
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 
 
 	//----GENERATING VBOs AND VAOs----//
@@ -202,11 +204,6 @@ int main() {
 	stbi_image_free(data);
 
 
-	//----GENERATING TRANSFORMATION MATRICES----//
-	glm::mat4 projection;
-	projection = glm::perspective(PI / 4, aspectRatio, 0.1f, 100.0f);
-
-
 	//Generating random rotation axes for all cubes
 	float rotationAxes[10][3];
 	srand(234567832456348756);
@@ -227,7 +224,6 @@ int main() {
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-		std::cout << deltaTime << std::endl;
 
 		//Input
 		processInput(window);
@@ -257,6 +253,9 @@ int main() {
 		ourShader.setFloat("gOffset", gOffset);
 		ourShader.setFloat("bOffset", bOffset);
 
+
+		//----GENERATING TRANSFORMATION MATRICES----//
+
 		float rotationAmount = sin(time) * 10;
 		glm::mat4 trans = glm::mat4(1.0f);
 		trans = glm::rotate(trans, rotationAmount, glm::vec3(0.0, 0.0, 1.0));
@@ -264,12 +263,16 @@ int main() {
 		glm::mat4 view;
 		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp); //lookAt() automatically normalises direction argument (cameraPos + cameraFront)
 
+		glm::mat4 projection;
+		projection = glm::perspective(glm::radians(fov), aspectRatio, 0.1f, 100.0f);
+
 		ourShader.setMat4("rotationTransform", trans);
+		ourShader.setMat4("view", view);
+		ourShader.setMat4("projection", projection);
+
 
 		ourShader.setFloat("mixPercentage", mixPercentage);
 
-		ourShader.setMat4("view", view);
-		ourShader.setMat4("projection", projection);
 
 
 		//----RENDERING DONE HERE----//
@@ -287,8 +290,6 @@ int main() {
 		
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-
-
 
 		//check + call events and swap the buffers
 		glfwPollEvents();
@@ -374,4 +375,13 @@ void mouse_callback(GLFWwindow* window, double xPos, double yPos) {
 	direction.y = sin(glm::radians(pitch));
 	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
 	cameraFront = glm::normalize(direction);
+}
+
+
+void scroll_callback(GLFWwindow* window, double xOffset, double yOffset) {
+	fov -= (float)yOffset;
+	if (fov < 1.0f)
+		fov = 1.0f;
+	if (fov > 100.0f)
+		fov = 100.0f;
 }
