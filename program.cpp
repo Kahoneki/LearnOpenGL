@@ -15,7 +15,6 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 
-float mixPercentage{0.5};
 
 constexpr float PI{ 3.14159f };
 
@@ -29,6 +28,10 @@ constexpr int winX{800};
 constexpr int winY{800};
 constexpr float aspectRatio{ winX / winY };
 
+float mixPercentage{0.5};
+
+float deltaTime = 0.0f; //Time between current frame and last frame
+float lastFrame = 0.0f; //Time of last frame
 
 int main() {
 
@@ -210,6 +213,11 @@ int main() {
 	//----MAIN RENDER LOOP----//
 	while (!glfwWindowShouldClose(window)) {
 
+		float currentFrame = glfwGetTime();
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+		std::cout << deltaTime << std::endl;
+
 		//Input
 		processInput(window);
 
@@ -243,7 +251,7 @@ int main() {
 		trans = glm::rotate(trans, rotationAmount, glm::vec3(0.0, 0.0, 1.0));
 
 		glm::mat4 view;
-		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+		view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp); //lookAt() automatically normalises direction argument (cameraPos + cameraFront)
 
 		ourShader.setMat4("rotationTransform", trans);
 
@@ -296,15 +304,15 @@ void processInput(GLFWwindow* window) {
 		glfwSetWindowShouldClose(window, true);
 
 	//Movement
-	const float cameraSpeed = 0.05f;
+	const float moveSpeed = 10.0f;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraFront;
+		cameraPos += cameraFront * moveSpeed * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraFront;
+		cameraPos -= cameraFront * moveSpeed * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * moveSpeed * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * moveSpeed * deltaTime;
 
 	//Wireframe Toggle//
 	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS)
