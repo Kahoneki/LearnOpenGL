@@ -86,47 +86,48 @@ int main() {
 	//------------------------------------------------//
 
 	float vertices[] = {
-		-0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,
-		-0.5f,  0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,
+		//Vertex Positions		//Surface Normals
+		-0.5f, -0.5f, -0.5f,	0.0f,  0.0f, -1.0f,
+		 0.5f, -0.5f, -0.5f,	0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,	0.0f,  0.0f, -1.0f,
+		 0.5f,  0.5f, -0.5f,	0.0f,  0.0f, -1.0f,
+		-0.5f,  0.5f, -0.5f,	0.0f,  0.0f, -1.0f,
+		-0.5f, -0.5f, -0.5f,	0.0f,  0.0f, -1.0f,
 
-		-0.5f, -0.5f,  0.5f,
-		 0.5f, -0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f,
-		-0.5f, -0.5f,  0.5f,
+		-0.5f, -0.5f,  0.5f,	0.0f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,	0.0f,  0.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,	0.0f,  0.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,	0.0f,  0.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,	0.0f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,	0.0f,  0.0f, 1.0f,
 
-		-0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f, -0.5f,
-		-0.5f, -0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f,
+		-0.5f,  0.5f,  0.5f,	-1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,	-1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,	-1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,	-1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,	-1.0f,  0.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,	-1.0f,  0.0f,  0.0f,
 
-		 0.5f,  0.5f,  0.5f,
-		 0.5f,  0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,
+		 0.5f,  0.5f,  0.5f,	1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,	1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,	1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,	1.0f,  0.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,	1.0f,  0.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,	1.0f,  0.0f,  0.0f,
 
-		-0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f, -0.5f,
-		 0.5f, -0.5f,  0.5f,
-		 0.5f, -0.5f,  0.5f,
-		-0.5f, -0.5f,  0.5f,
-		-0.5f, -0.5f, -0.5f,
+		-0.5f, -0.5f, -0.5f,	0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f, -0.5f,	0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,	0.0f, -1.0f,  0.0f,
+		 0.5f, -0.5f,  0.5f,	0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,	0.0f, -1.0f,  0.0f,
+		-0.5f, -0.5f, -0.5f,	0.0f, -1.0f,  0.0f,
 
-		-0.5f,  0.5f, -0.5f,
-		 0.5f,  0.5f, -0.5f,
-		 0.5f,  0.5f,  0.5f,
-		 0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f,  0.5f,
-		-0.5f,  0.5f, -0.5f
+		-0.5f,  0.5f, -0.5f,	0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f, -0.5f,	0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,	0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,	0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,	0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f, -0.5f,	0.0f,  1.0f,  0.0f
 	};
 
 	//----VBO----//
@@ -139,15 +140,17 @@ int main() {
 	unsigned int objectVAO;
 	glGenVertexArrays(1, &objectVAO);
 	glBindVertexArray(objectVAO);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3*sizeof(float)));
+	glEnableVertexAttribArray(1);
 	
 	//----Light VAO----//
 	unsigned int lightVAO;
 	glGenVertexArrays(1, &lightVAO);
 	glBindVertexArray(lightVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
 
@@ -157,6 +160,7 @@ int main() {
 
 	//Light source shader program
 	Shader lightSourceShader("lightVert.glsl", "lightFrag.glsl");
+	glm::vec3 lightPos {1.2f, 1.0f, 2.0f};
 
 
 	//------------------------//
@@ -177,7 +181,7 @@ int main() {
 
 
 		//----GENERATING TRANSFORMATION MATRICES----//
-		// 
+		
 		//Camera matricess
 		glm::mat4 view;
 		view = camera.GetViewMatrix();
@@ -193,13 +197,13 @@ int main() {
 		lightingShader.setMat4("view", view);
 		lightingShader.setMat4("projection", projection);
 
+		lightingShader.setVec3("lightPos", lightPos);
 		lightingShader.setVec3("objectColour", 1.0f, 0.5f, 0.31f);
-		lightingShader.setVec3("lightColour", 1.0f, 0.5f, 1.0f);
+		lightingShader.setVec3("lightColour", 1.0f, 1.0f, 1.0f);
 
 
 		//----LIGHT SOURCE MATRICES----//
 		lightSourceShader.use();
-		glm::vec3 lightPos {1.2f, 1.0f, 2.0f};
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
@@ -221,6 +225,13 @@ int main() {
 		lightSourceShader.use();
 		glBindVertexArray(lightVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		GLfloat pixelData[4];
+		glReadPixels(winX/2, winY/2, 1, 1, GL_RGBA, GL_FLOAT, pixelData);
+
+		std::cout << pixelData[0] << " " << pixelData[1] << " " << pixelData[2] << " " << pixelData[3] << std::endl << std::endl;
 
 
 		//Check & call events and swap the buffers
