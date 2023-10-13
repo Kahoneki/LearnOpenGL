@@ -180,13 +180,14 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
-		//----GENERATING TRANSFORMATION MATRICES----//
+		//----SETTING UNIFORMS----//
 		
-		//Camera matricess
+		//----CAMERA MATRICES----//
 		glm::mat4 view;
 		view = camera.GetViewMatrix();
 		glm::mat4 projection;
 		projection = glm::perspective(glm::radians(camera.Fov), aspectRatio, 0.1f, 100.0f);
+
 
 		//----OBJECT UNIFORMS----//
 		lightingShader.use();
@@ -197,14 +198,19 @@ int main() {
 		lightingShader.setMat4("view", view);
 		lightingShader.setMat4("projection", projection);
 
-		lightingShader.setVec3("viewPos", camera.Position);
+		//Material
+		lightingShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
+		lightingShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
+		lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
+		lightingShader.setFloat("material.shininess", 32.0f);
 
-		lightPos.x = sin(glfwGetTime());
-		lightPos.y = cos(glfwGetTime());
-		lightPos.z = sin(glfwGetTime());
+		//Light
+		lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+		lightingShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+		lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+
+		lightingShader.setVec3("viewPos", camera.Position);
 		lightingShader.setVec3("lightPos", lightPos);
-		
-		lightingShader.setVec3("objectColour", 1.0f, 0.5f, 0.31f);
 		lightingShader.setVec3("lightColour", 1.0f, 1.0f, 1.0f);
 
 
