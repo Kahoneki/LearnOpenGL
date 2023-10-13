@@ -9,6 +9,7 @@ struct Material {
 struct Light {
 	vec3 position;		//For point lights
 	vec3 direction;		//For directional lights
+	float cutoffAngle;	//For spotlights
 
 	//Strengths
 	vec3 ambient;
@@ -33,9 +34,40 @@ uniform vec3 viewPos;
 
 out vec4 FragColour;
 
+
+vec3 unitNormal = normalize(normal);
+vec3 lightDir = normalize(light.position - fragPos);
+
+
+//Forward declarations
+vec4 CalculatePhong();
+
+
 void main()
 {
 
+	//Checking if fragment is inside spotlight cone
+	float theta = dot(lightDir, normalize(-light.direction));
+
+	if (theta > light.cutoffAngle)
+	{
+		//Do lighting calculations
+		FragColour = CalculatePhong();
+	}
+
+	else
+	{
+		//Use ambient lighting
+		FragColour = vec4(light.ambient * vec3(texture(material.diffuse, TexCoords)), 1.0);
+	}
+
+}
+
+
+
+
+vec4 CalculatePhong()
+{
 	float distanceLightTravelled = length(light.position - fragPos);
 	
 	float attenuation = 1.0 / (light.constant +
@@ -55,8 +87,6 @@ void main()
 	//----DIFFUSE LIGHTING----//
 	//------------------------//
 
-	vec3 unitNormal = normalize(normal);
-	vec3 lightDir = normalize(-light.direction);
 	
 	float angle = max(dot(unitNormal, lightDir), 0.0); //If angle > 90, dot product will be negative; negative colours are undefined, so max() ensures result will always be positive
 	vec3 diffuse = light.diffuse * angle * vec3(texture(material.diffuse, TexCoords));
@@ -81,5 +111,5 @@ void main()
 	
 	vec3 result = ambient + diffuse + specular;
 
-	FragColour = vec4(result, 1.0);
+	return vec4(result, 1.0);
 }
