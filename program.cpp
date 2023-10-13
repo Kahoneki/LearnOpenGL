@@ -188,7 +188,7 @@ int main() {
 		glm::mat4 projection;
 		projection = glm::perspective(glm::radians(camera.Fov), aspectRatio, 0.1f, 100.0f);
 
-		//----OBJECT MATRICES----//
+		//----OBJECT UNIFORMS----//
 		lightingShader.use();
 		glm::mat4 model;
 		model = glm::mat4(1.0f);
@@ -198,12 +198,17 @@ int main() {
 		lightingShader.setMat4("projection", projection);
 
 		lightingShader.setVec3("viewPos", camera.Position);
+
+		lightPos.x = sin(glfwGetTime());
+		lightPos.y = cos(glfwGetTime());
+		lightPos.z = sin(glfwGetTime());
 		lightingShader.setVec3("lightPos", lightPos);
+		
 		lightingShader.setVec3("objectColour", 1.0f, 0.5f, 0.31f);
 		lightingShader.setVec3("lightColour", 1.0f, 1.0f, 1.0f);
 
 
-		//----LIGHT SOURCE MATRICES----//
+		//----LIGHT SOURCE UNIFORMS----//
 		lightSourceShader.use();
 
 		model = glm::mat4(1.0f);
