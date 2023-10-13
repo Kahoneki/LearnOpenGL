@@ -2,9 +2,9 @@
 
 
 struct Material {
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
+	sampler2D diffuse;
+	sampler2D specular;
+	sampler2D emission;
 	float shininess;
 };
 
@@ -17,7 +17,7 @@ struct Light {
 	vec3 specular;
 };
 
-
+in vec2 TexCoords;
 in vec3 fragPos;
 in vec3 normal;
 
@@ -26,7 +26,6 @@ uniform Light light;
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
-uniform vec3 lightColour;
 
 out vec4 FragColour;
 
@@ -36,7 +35,7 @@ void main()
 	//----AMBIENT LIGHTING----//
 	//------------------------//
 
-	vec3 ambient = material.ambient * light.ambient;
+	vec3 ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;
 	
 	
 	//------------------------//
@@ -47,7 +46,7 @@ void main()
 	vec3 lightDir = normalize(lightPos - fragPos);
 	
 	float angle = max(dot(unitNormal, lightDir), 0.0); //If angle > 90, dot product will be negative; negative colours are undefined, so max() ensures result will always be positive
-	vec3 diffuse = (angle * material.diffuse) * light.diffuse;
+	vec3 diffuse = light.diffuse * angle * vec3(texture(material.diffuse, TexCoords));
 
 
 	//-------------------------//
@@ -58,14 +57,21 @@ void main()
 	vec3 reflectDir = reflect(-lightDir, unitNormal); //reflect() expects the first argument to point from the light source towards the fragment position, so we have to negate lightDir.
 
 	float specularAmount = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-	vec3 specular = material.specular * specularAmount * light.specular;
+	vec3 specular = light.specular * specularAmount * vec3(texture(material.specular, TexCoords));
+
+
+	//-------------------------//
+	//----EMISSION LIGHTING----//
+	//-------------------------//
+	
+	vec3 emission = vec3(texture(material.emission, TexCoords));
 
 	
 	//-------------------------------//
 	//----CALCULATING FINAL PHONG----//
 	//-------------------------------//
 	
-	vec3 result = ambient + diffuse + specular;
+	vec3 result = ambient + diffuse + specular + emission;
 
 	FragColour = vec4(result, 1.0);
 }
