@@ -7,9 +7,10 @@ struct Material {
 };
 
 struct Light {
-	vec3 position;		//For point lights
-	vec3 direction;		//For directional lights
-	float cutoffAngle;	//For spotlights
+	vec3 position;			//For point lights
+	vec3 direction;			//For directional lights and spotlights
+	float innerCutoffAngle;	//For spotlights
+	float outerCutoffAngle; //For spotlights
 
 	//Strengths
 	vec3 ambient;
@@ -36,37 +37,27 @@ out vec4 FragColour;
 
 
 vec3 unitNormal = normalize(normal);
-vec3 lightDir = normalize(light.position - fragPos);
+vec3 lightDirToFrag = normalize(light.position - fragPos); //This is actually the direction from the frag to the light source
 
 
 //Forward declarations
-vec4 CalculatePhong();
+vec4 CalculatePhong(float intensity);
 
 
 void main()
 {
+	//Checking if fragment is inside spotlight cone, in falloff region, or outside fallof region (with interpolation)
+	float theta = dot(lightDirToFrag, normalize(-light.direction)); //Angle between fragment and light direction
+	float epsilon = light.innerCutoffAngle - light.outerCutoffAngle; //Angle between inner and outer cutoff regions (angular size of falloff region).
+	float intensity = clamp((theta - light.outerCutoffAngle) / epsilon, 0.0, 1.0);
 
-	//Checking if fragment is inside spotlight cone
-	float theta = dot(lightDir, normalize(-light.direction));
-
-	if (theta > light.cutoffAngle)
-	{
-		//Do lighting calculations
-		FragColour = CalculatePhong();
-	}
-
-	else
-	{
-		//Use ambient lighting
-		FragColour = vec4(light.ambient * vec3(texture(material.diffuse, TexCoords)), 1.0);
-	}
-
+	FragColour = CalculatePhong(intensity);
 }
 
 
 
 
-vec4 CalculatePhong()
+vec4 CalculatePhong(float intensity)
 {
 	float distanceLightTravelled = length(light.position - fragPos);
 	
@@ -88,9 +79,9 @@ vec4 CalculatePhong()
 	//------------------------//
 
 	
-	float angle = max(dot(unitNormal, lightDir), 0.0); //If angle > 90, dot product will be negative; negative colours are undefined, so max() ensures result will always be positive
+	float angle = max(dot(unitNormal, lightDirToFrag), 0.0); //If angle > 90, dot product will be negative; negative colours are undefined, so max() ensures result will always be positive
 	vec3 diffuse = light.diffuse * angle * vec3(texture(material.diffuse, TexCoords));
-	diffuse *= attenuation;
+	diffuse *= attenuation *= intensity;
 
 
 	//-------------------------//
@@ -98,11 +89,11 @@ vec4 CalculatePhong()
 	//-------------------------//
 	
 	vec3 viewDir = normalize(viewPos - fragPos);
-	vec3 reflectDir = reflect(-lightDir, unitNormal); //reflect() expects the first argument to point from the light source towards the fragment position, so we have to negate lightDir.
+	vec3 reflectDir = reflect(-lightDirToFrag, unitNormal); //reflect() expects the first argument to point from the light source towards the fragment position, so we have to negate lightDirToFrag.
 
 	float specularAmount = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
 	vec3 specular = light.specular * specularAmount * vec3(texture(material.specular, TexCoords));
-	specular *= attenuation;
+	specular *= attenuation *= intensity;
 
 	
 	//-------------------------------//

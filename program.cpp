@@ -241,7 +241,8 @@ int main() {
 		//Light
 		lightingShader.setVec3("light.position", camera.Position); //Player holding flashlight
 		lightingShader.setVec3("light.direction", camera.Front);
-		lightingShader.setFloat("light.cutoffAngle", glm::cos(glm::radians(25.0f)));
+		lightingShader.setFloat("light.innerCutoffAngle", glm::cos(glm::radians(12.5f)));
+		lightingShader.setFloat("light.outerCutoffAngle", glm::cos(glm::radians(17.5f)));
 
 		lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
 		lightingShader.setVec3("light.diffuse", 0.8f, 0.8f, 0.8f);
