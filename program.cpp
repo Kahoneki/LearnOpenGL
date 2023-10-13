@@ -193,7 +193,13 @@ int main() {
 		glm::vec3(-4.0f,  2.0f, -12.0f),
 		glm::vec3(0.0f,  0.0f, -3.0f)
 	};
-
+	
+	glm::vec3 pointLightColours[numPointLights] = {
+		glm::vec3(0.2f, 0.2f, 0.6f),
+		glm::vec3(0.3f, 0.3f, 0.7f),
+		glm::vec3(0.0f, 0.0f, 0.3f),
+		glm::vec3(0.4f, 0.4f, 0.4f)
+	};
 
 
 	//---------------------------//
@@ -223,6 +229,7 @@ int main() {
 		processInput(window);
 
 		//Clear buffer
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
@@ -250,8 +257,8 @@ int main() {
 		//Directional lights
 		lightingShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
 		lightingShader.setVec3("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-		lightingShader.setVec3("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-		lightingShader.setVec3("dirLight.specular", 0.5f, 0.5f, 0.5f);
+		lightingShader.setVec3("dirLight.diffuse", 0.2f, 0.2f, 0.2f);
+		lightingShader.setVec3("dirLight.specular", 0.7f, 0.7f, 0.7f);
 
 		//Point lights
 		for (int i = 0; i < numPointLights; i++)
@@ -260,16 +267,16 @@ int main() {
 			lightingShader.setFloat(std::format("pointLights[{}].constant", i), 1.0f);
 			lightingShader.setFloat(std::format("pointLights[{}].linear", i), 0.09f);
 			lightingShader.setFloat(std::format("pointLights[{}].quadratic", i), 0.032f);
-			lightingShader.setVec3(std::format("pointLights[{}].ambient", i), 0.05f, 0.05f, 0.05f);
-			lightingShader.setVec3(std::format("pointLights[{}].diffuse", i), 0.8f, 0.8f, 0.8f);
-			lightingShader.setVec3(std::format("pointLights[{}].specular", i), 1.0f, 1.0f, 1.0f);
+			lightingShader.setVec3(std::format("pointLights[{}].ambient", i), pointLightColours[i]*0.1f);
+			lightingShader.setVec3(std::format("pointLights[{}].diffuse", i), pointLightColours[i]);
+			lightingShader.setVec3(std::format("pointLights[{}].specular", i), pointLightColours[i]);
 		}
 
 		//Spotlight
 		lightingShader.setVec3("spotlight.position", camera.Position);
 		lightingShader.setVec3("spotlight.direction", camera.Front);
-		lightingShader.setFloat("spotlight.innerCutoffAngle", glm::cos(glm::radians(12.5f)));
-		lightingShader.setFloat("spotlight.outerCutoffAngle", glm::cos(glm::radians(17.5f)));
+		lightingShader.setFloat("spotlight.innerCutoffAngle", glm::cos(glm::radians(10.0f)));
+		lightingShader.setFloat("spotlight.outerCutoffAngle", glm::cos(glm::radians(12.5f)));
 		lightingShader.setFloat("spotlight.constant", 1.0f);
 		lightingShader.setFloat("spotlight.linear", 0.09f);
 		lightingShader.setFloat("spotlight.quadratic", 0.032f);
